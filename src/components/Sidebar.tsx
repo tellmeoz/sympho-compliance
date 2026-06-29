@@ -44,6 +44,9 @@ export default function Sidebar() {
             <Link href="/audit-logs" className={`nav-item ${isLinkActive('/audit-logs') ? 'active' : ''}`}>
               <span className="nav-icon">📜</span> Auditoría
             </Link>
+            <Link href="/users" className={`nav-item ${isLinkActive('/users') ? 'active' : ''}`}>
+              <span className="nav-icon">⚙️</span> Usuarios
+            </Link>
           </>
         )}
       </nav>

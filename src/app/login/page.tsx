@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 
 export default function LoginPage() {
@@ -136,6 +137,11 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required 
             />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBlockStart: '0.35rem' }}>
+              <Link href="/forgot-password" style={{ fontSize: '0.8rem', color: 'var(--color-primary)', textDecoration: 'none' }}>
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
           </div>
 
           <div style={{ marginBlockStart: '0.5rem' }}>
