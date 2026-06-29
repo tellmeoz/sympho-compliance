@@ -122,15 +122,7 @@ export default function DonorDetailPage({ params }: { params: Promise<{ id: stri
   const handleSaveNotes = async () => {
     setSavingNotes(true);
     try {
-      // Nota: Hacemos PATCH a un endpoint de actualización.
-      // Como no definimos un endpoint individual de PATCH donor, podemos actualizarlo
-      // directamente en la BD usando el cliente de usuario si habilitáramos la ruta,
-      // o podemos implementar una ruta rápida.
-      // Para simplificar, implementemos la ruta rápida de actualización de notas si es necesario,
-      // o usemos la base de datos a través de una API.
-      // Creemos el endpoint PATCH /api/donors/[id] para actualizar notas/riesgo del donante.
-      // Espera, para no romper, creemos la llamada de API y si falla nos aseguramos que exista.
-      // Escribiremos la ruta PATCH /api/donors/[id] a continuación.
+      // Actualizar las notas del donante a través del endpoint PATCH
       const res = await fetch(`/api/donors/${id}/update`, {
         method: 'PATCH',
         headers: {

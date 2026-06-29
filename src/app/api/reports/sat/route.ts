@@ -59,9 +59,7 @@ export async function GET(request: NextRequest) {
     }
     
     // 4. Consultar acumulaciones históricas para la ventana de 6 meses móvil que termina en este mes
-    const reportMonthEnd = new Date(year, month, 0);
-    const startDate6M = new Date(reportMonthEnd);
-    startDate6M.setMonth(reportMonthEnd.getMonth() - 6);
+    const startDate6M = new Date(year, month - 6, 1);
     const startDate6MStr = startDate6M.toISOString().split('T')[0];
     
     const { data: histDonations, error: histError } = await supabase
