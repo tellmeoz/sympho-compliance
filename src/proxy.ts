@@ -5,7 +5,7 @@ import * as jose from 'jose';
 const secretStr = process.env.JWT_SECRET || 'secret-fallback-debe-ser-largo-de-32-bytes-en-produccion';
 const JWT_SECRET = new TextEncoder().encode(secretStr);
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. Excluir rutas públicas estáticas, API de auth y endpoints de cron
@@ -36,7 +36,7 @@ export async function middleware(request: NextRequest) {
       const { payload } = await jose.jwtVerify(sessionToken, JWT_SECRET);
       isSessionValid = true;
       userRole = (payload.role as string) || 'Operador';
-    } catch (err) {
+    } catch {
       // Token inválido o expirado
     }
   }

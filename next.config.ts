@@ -1,7 +1,4 @@
-import type { NextConfig } from "next";
-
-// @ts-ignore
-const nextConfig: NextConfig = {
+const nextConfig: any = {
   turbopack: {
     root: process.cwd(),
   },
