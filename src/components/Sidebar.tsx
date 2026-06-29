@@ -34,9 +34,14 @@ export default function Sidebar() {
           <span className="nav-icon">💸</span> Transacciones
         </Link>
         {user && user.role === 'Oficial de Cumplimiento' && (
-          <Link href="/audit-logs" className={`nav-item ${isLinkActive('/audit-logs') ? 'active' : ''}`}>
-            <span className="nav-icon">📜</span> Auditoría
-          </Link>
+          <>
+            <Link href="/blacklist" className={`nav-item ${isLinkActive('/blacklist') ? 'active' : ''}`}>
+              <span className="nav-icon">🚫</span> Lista Negra
+            </Link>
+            <Link href="/audit-logs" className={`nav-item ${isLinkActive('/audit-logs') ? 'active' : ''}`}>
+              <span className="nav-icon">📜</span> Auditoría
+            </Link>
+          </>
         )}
       </nav>
       

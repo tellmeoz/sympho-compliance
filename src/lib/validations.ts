@@ -104,3 +104,12 @@ export const BootstrapSchema = z.object({
 export const AlertResolutionSchema = z.object({
   notes: z.string().min(5, 'Debe especificar notas de investigación del oficial de cumplimiento de al menos 5 caracteres')
 });
+
+/**
+ * Esquema de validación para agregar a la lista de bloqueados
+ */
+export const BlacklistSchema = z.object({
+  name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
+  rfc: z.string().regex(RFC_REGEX, 'El RFC ingresado no es válido').optional().or(z.literal('')),
+  reason: z.string().min(5, 'Debe especificar el motivo del bloqueo de al menos 5 caracteres')
+});
