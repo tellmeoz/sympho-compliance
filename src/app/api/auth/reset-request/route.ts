@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
     
     const recoveryLink = linkData.properties.action_link;
     const resendApiKey = process.env.RESEND_API_KEY;
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
     
     // 2. Si hay API Key de Resend configurada, enviar correo por Resend
     if (resendApiKey) {
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from: 'Sympho PLD <noreply@sympho.tech>', // Nota: El dominio debe estar verificado en Resend
+          from: fromEmail,
           to: [email],
           subject: 'Restablecer su contraseña - Sympho PLD',
           html: `
@@ -65,9 +66,11 @@ export async function POST(request: NextRequest) {
       
       const resendData = await resendRes.json();
       if (!resendRes.ok) {
+        console.error('Error de Resend detectado en servidor:', resendData);
+        const errorDetail = resendData.message || resendData.error?.message || 'Error de API desconocido';
         return NextResponse.json({ 
           error: 'Error al enviar correo mediante Resend', 
-          details: resendData.message || 'Resend API Error' 
+          details: errorDetail 
         }, { status: 502 });
       }
       

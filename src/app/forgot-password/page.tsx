@@ -27,7 +27,8 @@ export default function ForgotPasswordPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Error al solicitar la recuperación');
+        const detailMsg = data.details ? ` (${data.details})` : '';
+        throw new Error(`${data.error}${detailMsg}`);
       }
 
       if (data.devLink) {
