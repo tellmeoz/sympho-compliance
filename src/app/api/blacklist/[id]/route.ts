@@ -50,16 +50,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Error al remover el registro de la lista de bloqueados', details: deleteError.message }, { status: 500 });
     }
 
-    // 3.5. Re-evaluar y desbloquear donantes coincidentes
-    const { error: reevalError } = await supabase.rpc('reevaluate_blacklist_on_remove', {
-      p_name: currentEntry.name,
-      p_rfc: currentEntry.rfc || null,
-      p_org_id: session.orgId
-    });
 
-    if (reevalError) {
-      console.error('Error al reevaluar donantes tras remover bloqueo:', reevalError.message);
-    }
     
     // 4. Escribir log de auditoría
     await logAudit({

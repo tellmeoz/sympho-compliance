@@ -99,17 +99,6 @@ export async function POST(request: NextRequest) {
       request
     });
 
-    // 7. Re-evaluar y bloquear donantes existentes coincidentes
-    const { error: reevalError } = await supabase.rpc('reevaluate_blacklist_on_add', {
-      p_name: name,
-      p_rfc: rfc || null,
-      p_org_id: session.orgId
-    });
-
-    if (reevalError) {
-      console.error('Error al reevaluar donantes existentes tras agregar bloqueo:', reevalError.message);
-    }
-    
     return NextResponse.json({
       success: true,
       entry: newEntry

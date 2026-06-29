@@ -10,7 +10,7 @@ El software implementa un modelo multi-inquilino (multi-tenant) seguro con aisla
 
 1.  **Frontend & API (Backend Serverless):** Next.js 16 (App Router, React Server Components).
 2.  **Base de Datos & Servicios en la Nube:** Supabase (PostgreSQL, Storage Privado, Autenticación y Manejo de Sesiones).
-3.  **Seguridad y Sesiones:** Sesiones cifradas basadas en cookies seguras (`HttpOnly`, `SameSite=Lax`, `Secure`), Double-Submit CSRF Protection con tokens aleatorios, y políticas RLS nativas en Supabase.
+3.  **Seguridad y Sesiones:** Sesiones cifradas basadas en cookies seguras (`HttpOnly`, `SameSite=Strict`, `Secure`), Double-Submit CSRF Protection con tokens aleatorios, y políticas RLS nativas en Supabase.
 4.  **Cumplimiento Normativo PLD:** Lógica en base de datos mediante triggers y funciones en PL/pgSQL para evaluar de manera atómica acumulaciones semestrales, decaimiento de alertas por tiempo y validación inmediata contra listas negras.
 
 ---
@@ -30,8 +30,8 @@ Todas las operaciones sensibles (creación, edición y borrado) registran autom�
 *   La consola del Oficial cuenta con una pantalla de **Auditoría** que analiza e inspecciona las diferencias de estados (diffs de base de datos) anteriores y nuevos.
 
 ### Motor de Acumulación Semestral de Umbrales
-*   **Umbral de Identificación ($150,626.04 MXN / 1,605 UMA):** Si el acumulado móvil del donante en un periodo semestral excede este umbral, el sistema alerta que el expediente KYC del donante debe estar 100% completo y dictaminado.
-*   **Umbral de Aviso Obligatorio ($299,448.90 MXN / 3,210 UMA):** Si excede este umbral, se levanta una alerta de peligro instando a emitir el dictamen y preparar el reporte oficial para el portal del SAT (dentro de los primeros 17 días del mes inmediato posterior).
+*   **Umbral de Identificación ($188,282.55 MXN / 1,605 UMA):** Si el acumulado móvil del donante en un periodo semestral excede este umbral, el sistema alerta que el expediente KYC del donante debe estar 100% completo y dictaminado.
+*   **Umbral de Aviso Obligatorio ($376,565.10 MXN / 3,210 UMA):** Si excede este umbral, se levanta una alerta de peligro instando a emitir el dictamen y preparar el reporte oficial para el portal del SAT (dentro de los primeros 17 días del mes inmediato posterior).
 *   **Time-Decay Scheduler (Cron):** Un endpoint asegurado con firma de token corre a diario mediante Vercel Cron Jobs para depreciar y expirar automáticamente alertas y saldos acumulados cuya antigüedad rebase los 6 meses de vigencia legal.
 
 ### Lista de Personas Bloqueadas (Lista Negra Local)

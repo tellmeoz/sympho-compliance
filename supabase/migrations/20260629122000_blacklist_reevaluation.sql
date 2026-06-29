@@ -55,11 +55,10 @@ BEGIN
             updated_at = NOW()
         WHERE id = r_donor.id;
         
-        -- Resolver automáticamente cualquier alerta activa de blacklist_match
+        -- Resolver automáticamente cualquier alerta activa de blacklist_match (tabla alerts no tiene updated_at)
         UPDATE public.alerts
         SET status = 'resolved',
-            notes = 'Removido de la lista de bloqueados local (Desbloqueo administrativo)',
-            updated_at = NOW()
+            notes = 'Removido de la lista de bloqueados local (Desbloqueo administrativo)'
         WHERE donor_id = r_donor.id
           AND category = 'blacklist_match'
           AND status = 'active';
@@ -69,3 +68,31 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger AFTER INSERT en blocked_list
+CREATE OR REPLACE FUNCTION public.tr_blocked_list_insert()
+RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM public.reevaluate_blacklist_on_add(NEW.name, NEW.rfc, NEW.organization_id);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE TRIGGER trigger_blocked_list_insert
+AFTER INSERT ON public.blocked_list
+FOR EACH ROW
+EXECUTE FUNCTION public.tr_blocked_list_insert();
+
+-- Trigger AFTER DELETE en blocked_list
+CREATE OR REPLACE FUNCTION public.tr_blocked_list_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM public.reevaluate_blacklist_on_remove(OLD.name, OLD.rfc, OLD.organization_id);
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE TRIGGER trigger_blocked_list_delete
+AFTER DELETE ON public.blocked_list
+FOR EACH ROW
+EXECUTE FUNCTION public.tr_blocked_list_delete();
