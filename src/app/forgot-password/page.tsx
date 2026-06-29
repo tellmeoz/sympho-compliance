@@ -8,6 +8,7 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [devLink, setDevLink] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +30,12 @@ export default function ForgotPasswordPage() {
         throw new Error(data.error || 'Error al solicitar la recuperación');
       }
 
-      setSuccess('Se ha enviado un enlace para restablecer tu contraseña a tu correo electrónico. Por favor, revisa tu bandeja de entrada.');
+      if (data.devLink) {
+        setDevLink(data.devLink);
+        setSuccess('Enlace de recuperación generado en modo desarrollo (ver detalle abajo).');
+      } else {
+        setSuccess('Se ha enviado un enlace para restablecer tu contraseña a tu correo electrónico mediante Resend. Por favor, revisa tu bandeja de entrada.');
+      }
       setEmail('');
     } catch (err: any) {
       setError(err.message);
@@ -87,6 +93,13 @@ export default function ForgotPasswordPage() {
             fontSize: '0.85rem' 
           }}>
             ✅ {success}
+            
+            {devLink && (
+              <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255,255,255,0.01)', border: '1px dashed var(--color-primary)', borderRadius: 'var(--radius-sm)', marginBlockStart: '0.75rem', color: '#fff', fontSize: '0.8rem' }}>
+                <strong>Modo Desarrollo:</strong> Resend no está configurado. Simule el clic del correo usando este enlace:
+                <a href={devLink} style={{ display: 'block', color: 'var(--color-primary)', marginBlockStart: '0.25rem', wordBreak: 'break-all' }}>Restablecer mi contraseña →</a>
+              </div>
+            )}
           </div>
         )}
 
