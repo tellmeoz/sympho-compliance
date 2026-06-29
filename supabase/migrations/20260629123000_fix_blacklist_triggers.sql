@@ -1,4 +1,4 @@
--- Función para re-evaluar y bloquear donantes existentes cuando se agrega un registro a la lista negra
+-- 1. Redefinir función de reevaluación al agregar (con corrección y soporte para triggers)
 CREATE OR REPLACE FUNCTION public.reevaluate_blacklist_on_add(
     p_name TEXT,
     p_rfc TEXT,
@@ -29,7 +29,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Función para re-evaluar y desbloquear donantes cuando se remueve un registro de la lista negra
+-- 2. Redefinir función de reevaluación al remover (Corrigiendo el error de la columna alerts.updated_at)
 CREATE OR REPLACE FUNCTION public.reevaluate_blacklist_on_remove(
     p_name TEXT,
     p_rfc TEXT,
@@ -55,11 +55,10 @@ BEGIN
             updated_at = NOW()
         WHERE id = r_donor.id;
         
-        -- Resolver automáticamente cualquier alerta activa de blacklist_match
+        -- Resolver automáticamente cualquier alerta activa de blacklist_match (removiendo updated_at)
         UPDATE public.alerts
         SET status = 'resolved',
-            notes = 'Removido de la lista de bloqueados local (Desbloqueo administrativo)',
-            updated_at = NOW()
+            notes = 'Removido de la lista de bloqueados local (Desbloqueo administrativo)'
         WHERE donor_id = r_donor.id
           AND category = 'blacklist_match'
           AND status = 'active';
@@ -69,3 +68,32 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 3. Crear triggers automáticos para la tabla blocked_list
+CREATE OR REPLACE FUNCTION public.tr_blocked_list_insert()
+RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM public.reevaluate_blacklist_on_add(NEW.name, NEW.rfc, NEW.organization_id);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trigger_blocked_list_insert ON public.blocked_list;
+CREATE TRIGGER trigger_blocked_list_insert
+AFTER INSERT ON public.blocked_list
+FOR EACH ROW
+EXECUTE FUNCTION public.tr_blocked_list_insert();
+
+CREATE OR REPLACE FUNCTION public.tr_blocked_list_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM public.reevaluate_blacklist_on_remove(OLD.name, OLD.rfc, OLD.organization_id);
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trigger_blocked_list_delete ON public.blocked_list;
+CREATE TRIGGER trigger_blocked_list_delete
+AFTER DELETE ON public.blocked_list
+FOR EACH ROW
+EXECUTE FUNCTION public.tr_blocked_list_delete();
