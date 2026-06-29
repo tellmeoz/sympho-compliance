@@ -35,6 +35,9 @@ export default function Sidebar() {
         </Link>
         {user && user.role === 'Oficial de Cumplimiento' && (
           <>
+            <Link href="/reports" className={`nav-item ${isLinkActive('/reports') ? 'active' : ''}`}>
+              <span className="nav-icon">📊</span> Reportes SAT
+            </Link>
             <Link href="/blacklist" className={`nav-item ${isLinkActive('/blacklist') ? 'active' : ''}`}>
               <span className="nav-icon">🚫</span> Lista Negra
             </Link>
