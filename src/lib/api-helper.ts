@@ -51,11 +51,18 @@ export async function verifySessionAndCsrf(request: NextRequest): Promise<Authen
     }
   }
 
-  // 4. Validación de Origen (Origin / Referer)
+  // 4. Validación de Origen (Same-Origin Header Validation para proteger contra CSRF)
   const origin = request.headers.get('origin');
-  const allowedOrigin = process.env.NEXT_PUBLIC_APP_URL;
-  if (origin && allowedOrigin && origin !== allowedOrigin) {
-    throw new Error('Validación de Red Fallida: Origen no permitido');
+  const host = request.headers.get('host');
+  if (origin && host) {
+    try {
+      const originHost = new URL(origin).host;
+      if (originHost !== host) {
+        throw new Error('Validación de Red Fallida: Origen no permitido');
+      }
+    } catch {
+      throw new Error('Validación de Red Fallida: Estructura de origen inválida');
+    }
   }
 
   // 5. Decodificar la identidad de Supabase a partir del accessToken para obtener el userId
