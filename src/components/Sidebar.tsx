@@ -33,6 +33,11 @@ export default function Sidebar() {
         <Link href="/transactions" className={`nav-item ${isLinkActive('/transactions') ? 'active' : ''}`}>
           <span className="nav-icon">💸</span> Transacciones
         </Link>
+        {user && user.role === 'Oficial de Cumplimiento' && (
+          <Link href="/audit-logs" className={`nav-item ${isLinkActive('/audit-logs') ? 'active' : ''}`}>
+            <span className="nav-icon">📜</span> Auditoría
+          </Link>
+        )}
       </nav>
       
       {user && (
