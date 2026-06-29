@@ -58,19 +58,28 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Error al recuperar donativos del mes', details: donationsError.message }, { status: 500 });
     }
     
-    // 4. Consultar acumulaciones actuales del tenant para validar quién excede el límite
-    const { data: accumulations, error: accumError } = await supabase
-      .from('v_donor_current_accumulation')
-      .select('*');
+    // 4. Consultar acumulaciones históricas para la ventana de 6 meses móvil que termina en este mes
+    const reportMonthEnd = new Date(year, month, 0);
+    const startDate6M = new Date(reportMonthEnd);
+    startDate6M.setMonth(reportMonthEnd.getMonth() - 6);
+    const startDate6MStr = startDate6M.toISOString().split('T')[0];
+    
+    const { data: histDonations, error: histError } = await supabase
+      .from('donations')
+      .select('donor_id, amount')
+      .eq('status', 'Validada')
+      .gte('date', startDate6MStr)
+      .lte('date', endDate);
       
-    if (accumError) {
-      return NextResponse.json({ error: 'Error al recuperar saldos acumulados', details: accumError.message }, { status: 500 });
+    if (histError) {
+      return NextResponse.json({ error: 'Error al recuperar saldos acumulados históricos del período', details: histError.message }, { status: 500 });
     }
     
     // Mapear saldos acumulados indexados por donor_id
     const accumMap = new Map<string, number>();
-    accumulations?.forEach((acc: any) => {
-      accumMap.set(acc.donor_id, Number(acc.accumulated_amount_6m || 0));
+    histDonations?.forEach((don: any) => {
+      const currentSum = accumMap.get(don.donor_id) || 0;
+      accumMap.set(don.donor_id, currentSum + Number(don.amount || 0));
     });
     
     // 5. Filtrar donativos que corresponden a donantes en estado de aviso (acumulación >= $376,565.10 MXN)

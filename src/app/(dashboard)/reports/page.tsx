@@ -120,7 +120,7 @@ export default function ReportsPage() {
       sujeto_obligado: {
         rfc: metadata.organization.rfc,
         razon_social: metadata.organization.name,
-        actividad_vulneraria: "Recepción de Donativos (LFPIORPI Art. 17 Fracc. XI)"
+        actividad_vulneraria: "Recepción de Donativos (LFPIORPI Art. 17 Fracc. XIII)"
       },
       periodo_reportado: `${metadata.period.year}-${String(metadata.period.month).padStart(2, '0')}`,
       resumen: {
@@ -176,7 +176,7 @@ export default function ReportsPage() {
     if (!metadata || donations.length === 0) return;
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
-    xml += `<ReporteMensualPLD xmlns="http://www.satsocial.gob.mx/pld/donatarias" version="1.0">\n`;
+    xml += `<ReporteMensualPLD xmlns="http://www.sppld.sat.gob.mx/formatos/donatarias" version="1.0">\n`;
     xml += `  <SujetoObligado rfc="${metadata.organization.rfc}" razonSocial="${escapeXml(metadata.organization.name)}" />\n`;
     xml += `  <Periodo año="${metadata.period.year}" mes="${String(metadata.period.month).padStart(2, '0')}" />\n`;
     xml += `  <Resumen totalAvisos="${metadata.total_donations_count}" montoTotal="${metadata.total_reportable_amount.toFixed(2)}" />\n`;
@@ -298,8 +298,11 @@ export default function ReportsPage() {
                 📥 Descargar Reporte (JSON)
               </button>
               <button className="btn btn-secondary" onClick={downloadXML} style={{ width: '100%', borderColor: 'var(--color-primary)', color: 'var(--color-primary)' }}>
-                📥 Descargar XML (SAT)
+                📥 Descargar Borrador XML
               </button>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textAlign: 'center', display: 'block', marginBlockStart: '0.25rem' }}>
+                * El XML sirve como borrador interno y pre-validación.
+              </span>
             </div>
           </div>
         )}

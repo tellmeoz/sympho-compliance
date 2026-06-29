@@ -70,7 +70,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     // 6. Estructurar el reporte de aviso de 24h
     const reportData = {
       tipo_reporte: 'AVISO_24H_EMERGENCIA_UIF',
-      ley_reguladora: 'LFPIORPI Art. 17 Fracc. XI y Reglas de Carácter General',
+      ley_reguladora: 'LFPIORPI Art. 17 Fracc. XIII y Reglas de Carácter General',
       fecha_deteccion: alert.created_at,
       tiempo_limite_24h: new Date(new Date(alert.created_at).getTime() + 24 * 60 * 60 * 1000).toISOString(),
       causa_bloqueo: alert.description,
