@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface User {
@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [csrfToken, setCsrfToken] = useState<string>('');
   const router = useRouter();
 
-  const refreshSession = async () => {
+  const refreshSession = useCallback(async () => {
     try {
       const response = await fetch('/api/auth/session');
       if (response.ok) {
@@ -51,17 +51,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
         setCsrfToken('');
       }
-    } catch (err) {
+    } catch {
       setUser(null);
       setCsrfToken('');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     refreshSession();
-  }, []);
+  }, [refreshSession]);
 
   const login = (userData: User, csrf: string) => {
     setUser(userData);
@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           'x-csrf-token': csrfToken
         }
       });
-    } catch (err) {
+    } catch {
       // Ignorar errores al desloguear
     } finally {
       setUser(null);

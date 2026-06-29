@@ -336,7 +336,7 @@ export default function DonorDetailPage({ params }: { params: Promise<{ id: stri
               )}
               <div className="meta-info-item" style={{ gridColumn: 'span 2' }}>
                 <span className="meta-info-label" style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>Procedencia de Fondos</span>
-                <p style={{ fontSize: '0.85rem', color: '#fff', fontStyle: 'italic', marginBlockStart: '0.25rem' }}>"{donor.funds_origin}"</p>
+                <p style={{ fontSize: '0.85rem', color: '#fff', fontStyle: 'italic', marginBlockStart: '0.25rem' }}>&quot;{donor.funds_origin}&quot;</p>
               </div>
             </div>
 

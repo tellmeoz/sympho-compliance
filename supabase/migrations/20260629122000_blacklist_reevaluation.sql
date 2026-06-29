@@ -1,0 +1,71 @@
+-- Función para re-evaluar y bloquear donantes existentes cuando se agrega un registro a la lista negra
+CREATE OR REPLACE FUNCTION public.reevaluate_blacklist_on_add(
+    p_name TEXT,
+    p_rfc TEXT,
+    p_org_id UUID
+) RETURNS VOID AS $$
+DECLARE
+    r_donor RECORD;
+BEGIN
+    -- Buscar todos los donantes que coincidan con la entrada agregada a la lista negra
+    FOR r_donor IN 
+        SELECT id FROM public.donors
+        WHERE organization_id = p_org_id
+          AND (
+            (p_rfc IS NOT NULL AND p_rfc <> '' AND rfc = p_rfc)
+            OR
+            (UPPER(public.immutable_unaccent(TRIM(name))) = UPPER(public.immutable_unaccent(TRIM(p_name))))
+          )
+    LOOP
+        -- Actualizar estatus del donante a bloqueado
+        UPDATE public.donors
+        SET screening_status = 'blocked',
+            updated_at = NOW()
+        WHERE id = r_donor.id;
+        
+        -- Ejecutar la evaluación de cumplimiento para actualizar overall_status y crear alertas
+        PERFORM public.evaluate_donor_compliance(r_donor.id);
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Función para re-evaluar y desbloquear donantes cuando se remueve un registro de la lista negra
+CREATE OR REPLACE FUNCTION public.reevaluate_blacklist_on_remove(
+    p_name TEXT,
+    p_rfc TEXT,
+    p_org_id UUID
+) RETURNS VOID AS $$
+DECLARE
+    r_donor RECORD;
+BEGIN
+    -- Buscar todos los donantes que estaban bloqueados y coinciden con la entrada de la lista negra removida
+    FOR r_donor IN 
+        SELECT id FROM public.donors
+        WHERE organization_id = p_org_id
+          AND screening_status = 'blocked'
+          AND (
+            (p_rfc IS NOT NULL AND p_rfc <> '' AND rfc = p_rfc)
+            OR
+            (UPPER(public.immutable_unaccent(TRIM(name))) = UPPER(public.immutable_unaccent(TRIM(p_name))))
+          )
+    LOOP
+        -- Restablecer el screening_status a 'ok'
+        UPDATE public.donors
+        SET screening_status = 'ok',
+            updated_at = NOW()
+        WHERE id = r_donor.id;
+        
+        -- Resolver automáticamente cualquier alerta activa de blacklist_match
+        UPDATE public.alerts
+        SET status = 'resolved',
+            notes = 'Removido de la lista de bloqueados local (Desbloqueo administrativo)',
+            updated_at = NOW()
+        WHERE donor_id = r_donor.id
+          AND category = 'blacklist_match'
+          AND status = 'active';
+          
+        -- Re-evaluar cumplimiento global del donante
+        PERFORM public.evaluate_donor_compliance(r_donor.id);
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
