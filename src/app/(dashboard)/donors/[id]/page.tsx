@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, use } from 'react';
+import React, { useEffect, useState, use, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 
@@ -80,7 +80,7 @@ export default function DonorDetailPage({ params }: { params: Promise<{ id: stri
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [uploadingDocType, setUploadingDocType] = useState<string | null>(null);
 
-  const fetchDonorDetail = async () => {
+  const fetchDonorDetail = useCallback(async () => {
     try {
       const res = await fetch(`/api/donors/${id}`);
       if (!res.ok) throw new Error('Error al cargar la información del donante');
@@ -96,11 +96,11 @@ export default function DonorDetailPage({ params }: { params: Promise<{ id: stri
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchDonorDetail();
-  }, [id]);
+  }, [fetchDonorDetail]);
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(val);

@@ -1,5 +1,5 @@
 import { verifySessionAndCsrf, logAudit } from '@/lib/api-helper';
-import { createUserClient, createAdminClient } from '@/lib/supabase-server';
+import { createUserClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 

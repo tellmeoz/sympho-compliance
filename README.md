@@ -37,7 +37,7 @@ Todas las operaciones sensibles (creación, edición y borrado) registran autom�
 ### Lista de Personas Bloqueadas (Lista Negra Local)
 El sistema intercepta en tiempo real registros y actualizaciones de donantes contrastándolos con la lista de bloqueados local.
 *   **Detección Insensible a Acentos, Espacios y Mayúsculas:** Normalización estricta de nombres para evitar que variaciones ortográficas simples burlen la validación (coincidencia exacta normalizada).
-*   **Reevaluación Atómica:** Al agregar un nuevo bloqueo, el backend dispara una función que reevalúa y congela el estatus de todos los donantes existentes que coincidan por RFC o nombre.
+*   **Reevaluación Atómica:** Al agregar un nuevo bloqueo, triggers nativos en la base de datos reevalúan y congelan el estatus de todos los donantes existentes de forma transaccional.
 *   **Desbloqueo Seguro:** Al remover a una persona de la lista negra, el sistema desbloquea automáticamente a los donantes afectados, resuelve sus alertas de coincidencia y recalcula su estatus global sin comprometer otros umbrales.
 
 ---

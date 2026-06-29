@@ -101,7 +101,7 @@ export default function AuditLogsPage() {
     try {
       if (prevStr) prev = typeof prevStr === 'string' ? JSON.parse(prevStr) : prevStr;
       if (newStr) current = typeof newStr === 'string' ? JSON.parse(newStr) : newStr;
-    } catch (e) {
+    } catch {
       return <p style={{ color: 'var(--color-danger)' }}>Error al parsear el estado del registro.</p>;
     }
 

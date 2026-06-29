@@ -79,7 +79,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
                 ...doc,
                 signedUrl: signError ? null : signedData?.signedUrl || null
               };
-            } catch (err) {
+            } catch {
               return { ...doc, signedUrl: null };
             }
           }

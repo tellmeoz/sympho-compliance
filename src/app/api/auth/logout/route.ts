@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     let authUser = null;
     try {
       authUser = await verifySessionAndCsrf(request);
-    } catch (err) {
+    } catch {
       // Ignorar error al desloguear sesión inválida
     }
     

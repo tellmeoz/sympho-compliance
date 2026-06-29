@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { verifySessionToken } from './jwt-utils';
 import { createAdminClient } from './supabase-server';
 
@@ -31,7 +31,7 @@ export async function verifySessionAndCsrf(request: NextRequest): Promise<Authen
   let sessionPayload;
   try {
     sessionPayload = await verifySessionToken(sessionCookie);
-  } catch (err) {
+  } catch {
     throw new Error('No autorizado: Sesión inválida o expirada');
   }
 
@@ -72,7 +72,7 @@ export async function verifySessionAndCsrf(request: NextRequest): Promise<Authen
     const payloadBase64 = sessionPayload.accessToken.split('.')[1];
     const decodedPayload = JSON.parse(Buffer.from(payloadBase64, 'base64').toString());
     userId = decodedPayload.sub;
-  } catch (err) {
+  } catch {
     throw new Error('No autorizado: Token de Supabase corrupto');
   }
 
