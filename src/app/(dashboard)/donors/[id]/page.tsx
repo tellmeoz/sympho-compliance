@@ -3,6 +3,7 @@
 import React, { useEffect, useState, use, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
+import { useToast } from '@/components/ToastProvider';
 
 interface Donor {
   id: string;
@@ -65,6 +66,7 @@ interface Document {
 export default function DonorDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { user, csrfToken } = useAuth();
+  const { showToast } = useToast();
   
   const [donor, setDonor] = useState<Donor | null>(null);
   const [donations, setDonations] = useState<Donation[]>([]);
@@ -79,6 +81,11 @@ export default function DonorDetailPage({ params }: { params: Promise<{ id: stri
   const [resolvingAlertId, setResolvingAlertId] = useState<string | null>(null);
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [uploadingDocType, setUploadingDocType] = useState<string | null>(null);
+
+  // Estados para el visor Lightbox
+  const [activeViewerDoc, setActiveViewerDoc] = useState<Document | null>(null);
+  const [rejectionNotesInput, setRejectionNotesInput] = useState('');
+  const [reviewingInViewer, setReviewingInViewer] = useState(false);
 
   const fetchDonorDetail = useCallback(async () => {
     try {
@@ -134,10 +141,10 @@ export default function DonorDetailPage({ params }: { params: Promise<{ id: stri
       });
       
       if (!res.ok) throw new Error('Error al actualizar las notas');
-      alert('Comentarios guardados exitosamente.');
+      showToast('Comentarios guardados exitosamente.', 'success');
       fetchDonorDetail();
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      showToast(`Error: ${err.message}`, 'danger');
     } finally {
       setSavingNotes(false);
     }
@@ -167,10 +174,10 @@ export default function DonorDetailPage({ params }: { params: Promise<{ id: stri
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al subir archivo');
       
-      alert('Documento cargado exitosamente. Se puso en revisión.');
+      showToast('Documento cargado exitosamente. Se puso en revisión.', 'success');
       fetchDonorDetail();
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      showToast(`Error: ${err.message}`, 'danger');
     } finally {
       setUploadingDocType(null);
     }
@@ -194,17 +201,17 @@ export default function DonorDetailPage({ params }: { params: Promise<{ id: stri
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al procesar dictamen');
       
-      alert(status === 'ok' ? 'Documento aprobado y validado.' : 'Documento rechazado.');
+      showToast(status === 'ok' ? 'Documento aprobado y validado.' : 'Documento rechazado.', 'success');
       fetchDonorDetail();
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      showToast(`Error: ${err.message}`, 'danger');
     }
   };
 
   // Resolver Alerta de Cumplimiento
   const handleResolveAlert = async (alertId: string) => {
     if (!resolutionNotes.trim()) {
-      alert('Debe ingresar las notas de dictamen de investigación.');
+      showToast('Debe ingresar las notas de dictamen de investigación.', 'warning');
       return;
     }
 
@@ -221,12 +228,12 @@ export default function DonorDetailPage({ params }: { params: Promise<{ id: stri
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al resolver la alerta');
       
-      alert('Alerta dictaminada y archivada exitosamente.');
+      showToast('Alerta dictaminada y archivada exitosamente.', 'success');
       setResolvingAlertId(null);
       setResolutionNotes('');
       fetchDonorDetail();
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      showToast(`Error: ${err.message}`, 'danger');
     }
   };
 
@@ -365,9 +372,9 @@ export default function DonorDetailPage({ params }: { params: Promise<{ id: stri
                           <>
                             <span className="badge success">Aprobado</span>
                             {dbDoc?.signedUrl && (
-                              <a href={dbDoc.signedUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', textDecoration: 'none' }}>
+                              <button onClick={() => setActiveViewerDoc(dbDoc)} className="btn btn-secondary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
                                 👁️ Ver
-                              </a>
+                              </button>
                             )}
                           </>
                         )}
@@ -375,26 +382,9 @@ export default function DonorDetailPage({ params }: { params: Promise<{ id: stri
                           <>
                             <span className="badge warning">En revisión</span>
                             {dbDoc?.signedUrl && (
-                              <a href={dbDoc.signedUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', textDecoration: 'none' }}>
-                                👁️ Ver
-                              </a>
-                            )}
-                            {user?.role === 'Oficial de Cumplimiento' && dbDoc && (
-                              <div style={{ display: 'flex', gap: '0.25rem' }}>
-                                <button onClick={() => handleReviewDocument(dbDoc.id, 'ok')} className="btn" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', backgroundColor: 'var(--color-success)' }}>
-                                  ✓
-                                </button>
-                                <button 
-                                  onClick={() => {
-                                    const reason = prompt('Escriba el motivo de rechazo del documento:');
-                                    if (reason !== null) handleReviewDocument(dbDoc.id, 'rejected', reason);
-                                  }} 
-                                  className="btn" 
-                                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', backgroundColor: 'var(--color-danger)' }}
-                                >
-                                  ✗
-                                </button>
-                              </div>
+                              <button onClick={() => setActiveViewerDoc(dbDoc)} className="btn btn-secondary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
+                                👁️ Ver / Dictaminar
+                              </button>
                             )}
                           </>
                         )}
@@ -562,6 +552,110 @@ export default function DonorDetailPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
       </div>
+
+      {/* Lightbox Document Viewer Overlay */}
+      {activeViewerDoc && (
+        <div className="lightbox-overlay" onClick={() => { setActiveViewerDoc(null); setRejectionNotesInput(''); }}>
+          <div className="lightbox-container" onClick={(e) => e.stopPropagation()}>
+            <div className="lightbox-preview-area">
+              {activeViewerDoc.file_name.toLowerCase().endsWith('.pdf') ? (
+                <iframe src={activeViewerDoc.signedUrl} className="lightbox-doc-frame" title="Visualizador PDF" />
+              ) : (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={activeViewerDoc.signedUrl} className="lightbox-img-preview" alt="Vista previa de documento" />
+              )}
+            </div>
+            <div className="lightbox-sidebar">
+              <div className="lightbox-header">
+                <div className="lightbox-title">
+                  <h3>
+                    {activeViewerDoc.document_type === 'ine' && 'Identificación Oficial (INE)'}
+                    {activeViewerDoc.document_type === 'rfc' && 'Cédula RFC / Constancia'}
+                    {activeViewerDoc.document_type === 'comprobante' && 'Comprobante de Domicilio'}
+                    {activeViewerDoc.document_type === 'acta' && 'Acta Constitutiva'}
+                  </h3>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                    Archivo: {activeViewerDoc.file_name}
+                  </p>
+                </div>
+                <button className="lightbox-close-btn" onClick={() => { setActiveViewerDoc(null); setRejectionNotesInput(''); }}>×</button>
+              </div>
+              
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.85rem' }}>
+                <div>
+                  <strong>Estado Actual: </strong>
+                  <span className={`badge ${
+                    activeViewerDoc.review_status === 'ok' ? 'success' :
+                    activeViewerDoc.review_status === 'pending_review' ? 'warning' : 'danger'
+                  }`}>
+                    {activeViewerDoc.review_status === 'ok' ? 'Aprobado' :
+                     activeViewerDoc.review_status === 'pending_review' ? 'Pendiente de Revisión' : 'Rechazado'}
+                  </span>
+                </div>
+                
+                {activeViewerDoc.rejection_reason && (
+                  <div style={{ padding: '0.75rem', backgroundColor: 'var(--color-danger-glow)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-sm)', color: 'var(--color-danger)' }}>
+                    <strong>Motivo del Rechazo: </strong>
+                    {activeViewerDoc.rejection_reason}
+                  </div>
+                )}
+                
+                {activeViewerDoc.review_status === 'pending_review' && user?.role === 'Oficial de Cumplimiento' && (
+                  <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border-color)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontSize: '0.75rem' }}>Comentarios o Motivo de Rechazo</label>
+                      <textarea
+                        value={rejectionNotesInput}
+                        onChange={(e) => setRejectionNotesInput(e.target.value)}
+                        className="form-control"
+                        placeholder="Escriba aquí los motivos si decide rechazar el documento..."
+                        rows={3}
+                        style={{ fontSize: '0.8rem' }}
+                      />
+                    </div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <button
+                        type="button"
+                        className="btn"
+                        style={{ backgroundColor: 'var(--color-success)', color: 'var(--bg-main)' }}
+                        onClick={async () => {
+                          setReviewingInViewer(true);
+                          await handleReviewDocument(activeViewerDoc.id, 'ok');
+                          setReviewingInViewer(false);
+                          setActiveViewerDoc(null);
+                        }}
+                        disabled={reviewingInViewer}
+                      >
+                        Aprobar
+                      </button>
+                      <button
+                        type="button"
+                        className="btn"
+                        style={{ backgroundColor: 'var(--color-danger)' }}
+                        onClick={async () => {
+                          if (!rejectionNotesInput.trim()) {
+                            showToast('Debe ingresar un motivo de rechazo.', 'warning');
+                            return;
+                          }
+                          setReviewingInViewer(true);
+                          await handleReviewDocument(activeViewerDoc.id, 'rejected', rejectionNotesInput.trim());
+                          setReviewingInViewer(false);
+                          setActiveViewerDoc(null);
+                          setRejectionNotesInput('');
+                        }}
+                        disabled={reviewingInViewer}
+                      >
+                        Rechazar
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

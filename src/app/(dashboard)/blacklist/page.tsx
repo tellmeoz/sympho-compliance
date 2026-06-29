@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
+import { useToast } from '@/components/ToastProvider';
 
 interface BlacklistEntry {
   id: string;
@@ -13,6 +14,7 @@ interface BlacklistEntry {
 
 export default function BlacklistPage() {
   const { user, csrfToken } = useAuth();
+  const { showToast } = useToast();
   
   const [list, setList] = useState<BlacklistEntry[]>([]);
   const [search, setSearch] = useState('');
@@ -83,19 +85,19 @@ export default function BlacklistPage() {
           setFormErrors(errors);
         } else {
           const errorMsg = result.details ? `${result.error}: ${result.details}` : result.error;
-          alert(`Error: ${errorMsg}`);
+          showToast(`Error: ${errorMsg}`, 'danger');
         }
         return;
       }
 
-      // Reiniciar formulario y cerrar modal
+      showToast('Persona agregada a la lista negra exitosamente.', 'success');
       setFormName('');
       setFormRfc('');
       setFormReason('');
       setModalOpen(false);
       fetchList(); // Refrescar listado
     } catch (err: any) {
-      alert(`Error al enviar datos: ${err.message}`);
+      showToast(`Error al enviar datos: ${err.message}`, 'danger');
     } finally {
       setSubmitting(false);
     }
@@ -116,10 +118,10 @@ export default function BlacklistPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al desbloquear persona');
 
-      alert(`Se ha removido a ${name} de la lista de bloqueados.`);
+      showToast(`Se ha removido a ${name} de la lista de bloqueados.`, 'success');
       fetchList(); // Refrescar listado
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      showToast(`Error: ${err.message}`, 'danger');
     }
   };
 

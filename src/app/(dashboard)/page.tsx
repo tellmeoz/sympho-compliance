@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
+import { useToast } from '@/components/ToastProvider';
 
 interface Donor {
   id: string;
@@ -85,6 +86,7 @@ const BlacklistCountdown = ({ createdAt }: { createdAt: string }) => {
 
 export default function Dashboard() {
   const { user, csrfToken } = useAuth();
+  const { showToast } = useToast();
   const [donors, setDonors] = useState<Donor[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
@@ -141,7 +143,7 @@ export default function Dashboard() {
       const data = await res.json();
       setEmergencyReportData(data.report || null);
     } catch (err: any) {
-      window.alert(`Error: ${err.message}`);
+      showToast(`Error: ${err.message}`, 'danger');
       setActiveEmergencyAlert(null);
     } finally {
       setEmergencyLoading(false);
@@ -206,11 +208,11 @@ export default function Dashboard() {
     e.preventDefault();
     if (!activeEmergencyAlert) return;
     if (acuseFolio.trim().length < 5) {
-      window.alert('Por favor especifique un número de folio de acuse oficial válido del SAT.');
+      showToast('Por favor especifique un número de folio de acuse oficial válido del SAT.', 'warning');
       return;
     }
     if (resolutionNotes.trim().length < 5) {
-      window.alert('Las notas de resolución deben tener al menos 5 caracteres.');
+      showToast('Las notas de resolución deben tener al menos 5 caracteres.', 'warning');
       return;
     }
 
@@ -230,12 +232,12 @@ export default function Dashboard() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al resolver la alerta');
 
-      window.alert('Aviso de 24h registrado exitosamente. La alerta ha sido dictaminada y resuelta.');
+      showToast('Aviso de 24h registrado exitosamente. La alerta ha sido dictaminada y resuelta.', 'success');
       setActiveEmergencyAlert(null);
       setEmergencyReportData(null);
       fetchDashboardData(); // Refrescar dashboard completo
     } catch (err: any) {
-      window.alert(`Error: ${err.message}`);
+      showToast(`Error: ${err.message}`, 'danger');
     } finally {
       setSubmittingResolution(false);
     }

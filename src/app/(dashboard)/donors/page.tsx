@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
+import { useToast } from '@/components/ToastProvider';
 
 interface Donor {
   id: string;
@@ -17,6 +18,7 @@ interface Donor {
 
 export default function DonorsPage() {
   const { csrfToken } = useAuth();
+  const { showToast } = useToast();
   const [donors, setDonors] = useState<Donor[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -137,7 +139,7 @@ export default function DonorsPage() {
           setFormErrors(errors);
         } else {
           const errorMsg = result.details ? `${result.error}: ${result.details}` : result.error;
-          alert(`Error: ${errorMsg}`);
+          showToast(`Error: ${errorMsg}`, 'danger');
         }
         return;
       }
@@ -166,10 +168,11 @@ export default function DonorsPage() {
         risk: 'Bajo',
         notes: ''
       });
+      showToast('Donante registrado exitosamente.', 'success');
       setModalOpen(false);
       fetchDonors(); // Refrescar listado
     } catch (err: any) {
-      alert(`Error al enviar datos: ${err.message}`);
+      showToast(`Error al enviar datos: ${err.message}`, 'danger');
     } finally {
       setSubmitting(false);
     }

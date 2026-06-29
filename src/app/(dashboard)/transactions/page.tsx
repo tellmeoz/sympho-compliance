@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
+import { useToast } from '@/components/ToastProvider';
 
 interface Donor {
   id: string;
@@ -25,6 +26,7 @@ interface Donation {
 
 export default function TransactionsPage() {
   const { csrfToken } = useAuth();
+  const { showToast } = useToast();
   
   const [donors, setDonors] = useState<Donor[]>([]);
   const [donations, setDonations] = useState<Donation[]>([]);
@@ -135,7 +137,7 @@ export default function TransactionsPage() {
       fetchData(); // Recargar tablas
 
     } catch (err: any) {
-      alert(`Error al registrar donativo: ${err.message}`);
+      showToast(`Error al registrar donativo: ${err.message}`, 'danger');
     } finally {
       setSubmitting(false);
     }
