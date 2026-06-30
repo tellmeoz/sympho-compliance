@@ -83,6 +83,7 @@ export default function BlacklistPage() {
             }
           });
           setFormErrors(errors);
+          showToast('Campos con formato inválido. Por favor revise el formulario (ej. RFC inválido).', 'warning');
         } else {
           const errorMsg = result.details ? `${result.error}: ${result.details}` : result.error;
           showToast(`Error: ${errorMsg}`, 'danger');

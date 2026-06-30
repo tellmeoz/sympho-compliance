@@ -137,6 +137,7 @@ export default function DonorsPage() {
             }
           });
           setFormErrors(errors);
+          showToast('Campos con formato inválido. Por favor revise el formulario (ej. CURP, RFC o fechas).', 'warning');
         } else {
           const errorMsg = result.details ? `${result.error}: ${result.details}` : result.error;
           showToast(`Error: ${errorMsg}`, 'danger');
