@@ -1,10 +1,11 @@
-import { createUserClient } from '@/lib/supabase-server';
+import { createAdminClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 const ResetPasswordSchema = z.object({
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
-  accessToken: z.string().min(1, 'Token de acceso requerido')
+  token: z.string().min(1, 'Token de recuperación requerido'),
+  email: z.string().email('Correo electrónico inválido')
 });
 
 export async function POST(request: NextRequest) {
@@ -15,16 +16,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Datos de contraseña inválidos', details: validation.error.format() }, { status: 400 });
     }
     
-    const { password, accessToken } = validation.data;
+    const { password, token, email } = validation.data;
+    const supabaseAdmin = createAdminClient();
     
-    // Crear cliente de Supabase con el token de acceso del usuario (modo usuario)
-    const supabase = createUserClient(accessToken);
+    // 1. Verificar el token OTP de tipo recovery para el correo electrónico provisto
+    const { data: verifyData, error: verifyError } = await supabaseAdmin.auth.verifyOtp({
+      email,
+      token,
+      type: 'recovery'
+    });
     
-    // Actualizar la contraseña del usuario autenticado
-    const { error } = await supabase.auth.updateUser({ password });
+    if (verifyError || !verifyData.user) {
+      return NextResponse.json({ 
+        error: 'El enlace de recuperación es inválido o ha expirado. Por favor solicite uno nuevo.', 
+        details: verifyError?.message 
+      }, { status: 400 });
+    }
     
-    if (error) {
-      return NextResponse.json({ error: 'Error al cambiar la contraseña', details: error.message }, { status: 500 });
+    // 2. Actualizar la contraseña del usuario en Supabase Auth
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(verifyData.user.id, {
+      password
+    });
+    
+    if (updateError) {
+      return NextResponse.json({ 
+        error: 'Error al cambiar la contraseña en la base de datos de autenticación', 
+        details: updateError.message 
+      }, { status: 500 });
     }
     
     return NextResponse.json({

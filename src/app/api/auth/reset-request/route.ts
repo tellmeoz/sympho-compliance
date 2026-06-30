@@ -39,6 +39,10 @@ export async function POST(request: NextRequest) {
     }
     
     const recoveryLink = linkData.properties.action_link;
+    const linkUrl = new URL(recoveryLink);
+    const token = linkUrl.searchParams.get('token') || '';
+    const customLink = `${appUrl}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
+    
     const resendApiKey = process.env.RESEND_API_KEY;
     const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
     
@@ -59,7 +63,7 @@ export async function POST(request: NextRequest) {
               <div style="background-color: #06b6d4; width: 48px; height: 48px; border-radius: 50%; line-height: 48px; font-size: 24px; font-weight: bold; color: #0b0f19; margin: 0 auto 1.5rem; text-align: center;">S</div>
               <h2 style="color: #ffffff; margin-bottom: 1rem; font-size: 22px;">Restablecer Contraseña - Sympho PLD</h2>
               <p style="color: #9ca3af; font-size: 15px; margin-bottom: 2rem;">Ha solicitado un enlace para restablecer su contraseña de acceso en Sympho PLD. Haga clic en el botón a continuación para ingresar sus nuevas credenciales:</p>
-              <a href="${recoveryLink}" style="display: inline-block; background-color: #06b6d4; color: #0b0f19; padding: 0.85rem 2rem; font-weight: bold; text-decoration: none; border-radius: 6px; font-size: 15px; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(6,182,212,0.3);">Restablecer Contraseña</a>
+              <a href="${customLink}" style="display: inline-block; background-color: #06b6d4; color: #0b0f19; padding: 0.85rem 2rem; font-weight: bold; text-decoration: none; border-radius: 6px; font-size: 15px; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(6,182,212,0.3);">Restablecer Contraseña</a>
               <p style="color: #6b7280; font-size: 12px;">Si usted no solicitó este cambio, puede ignorar este correo de forma segura. El enlace expirará en 24 horas.</p>
             </div>
           `
@@ -83,12 +87,12 @@ export async function POST(request: NextRequest) {
     } else {
       // Modo Desarrollo / Fallback: Si no está configurado Resend, logueamos el enlace y lo devolvemos
       console.warn("⚠️ ADVERTENCIA: RESEND_API_KEY no configurado en .env.local");
-      console.log("🔗 Enlace de recuperación generado:", recoveryLink);
+      console.log("🔗 Enlace de recuperación generado:", customLink);
       
       return NextResponse.json({
         success: true,
         message: 'Enlace generado exitosamente (Modo Desarrollo).',
-        devLink: recoveryLink // Retornado solo para facilitar pruebas en local sin configurar Resend
+        devLink: customLink // Retornado solo para facilitar pruebas en local sin configurar Resend
       });
     }
     
