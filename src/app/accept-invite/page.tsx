@@ -43,8 +43,8 @@ function AcceptInviteForm() {
       return;
     }
 
-    if (name.trim().length < 3) {
-      setError('El nombre completo debe tener al menos 3 caracteres.');
+    if (name.trim().length < 2) {
+      setError('El nombre completo debe tener al menos 2 caracteres.');
       return;
     }
 

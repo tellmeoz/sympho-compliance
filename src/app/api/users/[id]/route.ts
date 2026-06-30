@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 const UpdateUserSchema = z.object({
-  name: z.string().min(3).optional(),
+  name: z.string().min(2).optional(),
   role: z.enum(['Oficial de Cumplimiento', 'Operador']).optional(),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres').optional()
 });

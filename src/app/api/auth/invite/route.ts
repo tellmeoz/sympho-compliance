@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 const InviteSchema = z.object({
   email: z.string().email('El correo electrónico no tiene un formato válido'),
-  name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres')
+  name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres')
 });
 
 export async function POST(request: NextRequest) {
