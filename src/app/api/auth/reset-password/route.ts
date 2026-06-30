@@ -16,13 +16,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Datos de contraseña inválidos', details: validation.error.format() }, { status: 400 });
     }
     
-    const { password, token, email } = validation.data;
+    const { password, token } = validation.data;
     const supabaseAdmin = createAdminClient();
     
-    // 1. Verificar el token OTP de tipo recovery para el correo electrónico provisto
+    // 1. Verificar el token hash de tipo recovery en Supabase
     const { data: verifyData, error: verifyError } = await supabaseAdmin.auth.verifyOtp({
-      email,
-      token,
+      token_hash: token,
       type: 'recovery'
     });
     
