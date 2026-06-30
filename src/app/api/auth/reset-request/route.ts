@@ -17,8 +17,10 @@ export async function POST(request: NextRequest) {
     const { email } = validation.data;
     const supabaseAdmin = createAdminClient();
     
-    // Obtener la URL base de la app
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    // Obtener la URL base de la app de forma dinámica (soporta producción y local sin configurar variables de entorno)
+    const host = request.headers.get('host') || 'localhost:3000';
+    const protocol = request.headers.get('x-forwarded-proto') || 'http';
+    const appUrl = `${protocol}://${host}`;
     
     // 1. Generar el enlace de recuperación de Supabase sin enviar correo a través de Supabase
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({

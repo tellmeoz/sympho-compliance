@@ -49,7 +49,10 @@ export async function POST(request: NextRequest) {
     }
     
     // 5. Enviar invitación por email a través de Supabase Auth Admin
-    const redirectToUrl = `${process.env.NEXT_PUBLIC_APP_URL}/login`;
+    // Obtener la URL de redirección de forma dinámica (soporta producción y local)
+    const host = request.headers.get('host') || 'localhost:3000';
+    const protocol = request.headers.get('x-forwarded-proto') || 'http';
+    const redirectToUrl = `${protocol}://${host}/login`;
     const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
       email,
       {
