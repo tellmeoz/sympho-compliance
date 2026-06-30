@@ -18,7 +18,8 @@ export async function proxy(request: NextRequest) {
                     pathname.startsWith('/api/auth/bootstrap') || 
                     pathname.startsWith('/api/auth/logout') ||
                     pathname.startsWith('/api/auth/reset-request') ||
-                    pathname.startsWith('/api/auth/reset-password');
+                    pathname.startsWith('/api/auth/reset-password') ||
+                    pathname.startsWith('/api/auth/confirm-invite');
                     
   const isCronApi = pathname.startsWith('/api/cron/');
 
@@ -49,10 +50,11 @@ export async function proxy(request: NextRequest) {
   const isBootstrapPage = pathname === '/bootstrap';
   const isForgotPasswordPage = pathname === '/forgot-password';
   const isResetPasswordPage = pathname === '/reset-password';
+  const isAcceptInvitePage = pathname === '/accept-invite';
 
   if (!isSessionValid) {
     // Si no está autenticado y busca rutas protegidas
-    if (!isLoginPage && !isBootstrapPage && !isForgotPasswordPage && !isResetPasswordPage) {
+    if (!isLoginPage && !isBootstrapPage && !isForgotPasswordPage && !isResetPasswordPage && !isAcceptInvitePage) {
       if (isApiRequest) {
         return NextResponse.json({ error: 'No autorizado: Inicie sesión' }, { status: 401 });
       }
@@ -60,7 +62,7 @@ export async function proxy(request: NextRequest) {
     }
   } else {
     // Si ya está autenticado e intenta ir a páginas públicas de login/registro
-    if (isLoginPage || isBootstrapPage || isForgotPasswordPage || isResetPasswordPage) {
+    if (isLoginPage || isBootstrapPage || isForgotPasswordPage || isResetPasswordPage || isAcceptInvitePage) {
       return NextResponse.redirect(new URL('/', request.url));
     }
 
