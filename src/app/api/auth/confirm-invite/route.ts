@@ -17,12 +17,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Datos de invitación inválidos', details: validation.error.format() }, { status: 400 });
     }
     
-    const { email, token, password, name } = validation.data;
+    const { token, password, name } = validation.data;
     const supabaseAdmin = createAdminClient();
     
     // 1. Verificar el token de invitación (OTP tipo invite) en Supabase
     const { data: verifyData, error: verifyError } = await supabaseAdmin.auth.verifyOtp({
-      email,
       token_hash: token,
       type: 'invite'
     });
